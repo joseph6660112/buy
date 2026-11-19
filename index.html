@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f1ede3">
+<title>水位</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f1ede3;--ink:#1d1c1a;--mute:#7a756a;--rule:#d3ccba;--red:#c0392b;--green:#2e6249;--soft:#e7e1d1}
+@media (prefers-color-scheme:dark){:root{--bg:#171613;--ink:#ece6d8;--mute:#8d887b;--rule:#34312a;--red:#ef6a52;--green:#6fb591;--soft:#211f1b}}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0;text-align:left}
+.num{font-family:"Iowan Old Style","Noto Serif TC","Songti TC",Georgia,serif;font-variant-numeric:tabular-nums lining-nums;letter-spacing:-.01em}
+#app{max-width:480px;margin:0 auto;padding:18px 20px 120px}
+.top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:22px}
+.top .d{font-size:13px;color:var(--mute);letter-spacing:.08em}
+.top .t{font-weight:700;letter-spacing:.2em}
+.gear{font-size:13px;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
+.sec{border-top:2px solid var(--ink);margin-top:26px;padding-top:10px}
+.lab{font-size:12px;color:var(--mute);letter-spacing:.12em;margin-bottom:6px;display:flex;justify-content:space-between}
+.hero{font-size:68px;line-height:1;font-weight:600}
+.hero.neg,.neg{color:var(--red)}
+.sub{margin-top:10px;display:flex;gap:18px;flex-wrap:wrap;color:var(--mute);font-size:14px}
+.sub b{color:var(--ink);font-weight:600}
+.say{margin-top:14px;padding-left:12px;border-left:3px solid var(--ink);font-size:14px}
+.prow{padding:14px 0;border-bottom:1px solid var(--rule)}
+.ph{display:flex;align-items:baseline;gap:10px}
+.pn{font-weight:700;font-size:16px}
+.pk{color:var(--mute);font-size:12px;flex:1}
+.pv{font-size:24px;font-weight:600}
+.bar{position:relative;height:6px;background:var(--rule);margin:9px 0 6px}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.bar i.over{background:var(--red)}
+.bar b{position:absolute;top:-5px;width:2px;height:16px;background:var(--mute)}
+.pm{font-size:12px;color:var(--mute)}
+.pend{border:2px solid var(--ink);padding:12px 14px;margin-top:22px;background:var(--soft)}
+.pend .h{font-weight:700;display:flex;justify-content:space-between;gap:8px}
+.pend p{font-size:13px;color:var(--mute);margin:4px 0 10px}
+.btn{display:inline-block;background:var(--ink);color:var(--bg);padding:8px 16px;font-weight:600;font-size:14px}
+.btn.line{background:none;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn[disabled]{opacity:.3;pointer-events:none}
+.row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px;align-items:baseline}
+.row .m{color:var(--mute);font-size:12px}
+.row .x{color:var(--mute);font-size:12px;text-decoration:underline;padding-left:8px}
+.empty{color:var(--mute);font-size:13px;padding:12px 0}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:2px solid var(--ink);display:grid;grid-template-columns:1fr 1fr 1.35fr 1fr 1fr;padding-bottom:env(safe-area-inset-bottom);z-index:5;max-width:480px;margin:0 auto}
+.tabs button{padding:15px 0 13px;text-align:center;font-size:14px;color:var(--mute);border-bottom:3px solid transparent;letter-spacing:.1em}
+.tabs button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+.tabs button.add{background:var(--ink);color:var(--bg);font-weight:700;border-bottom:0}
+.back{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:var(--bg);border-top:3px solid var(--ink);z-index:11;max-height:90vh;overflow:auto;padding:18px 20px calc(24px + env(safe-area-inset-bottom))}
+.sheet h3{font-size:13px;letter-spacing:.14em;color:var(--mute);font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between}
+.seg{display:flex;border:1.5px solid var(--ink);margin-bottom:14px}
+.seg button{flex:1;text-align:center;padding:7px 0;font-size:14px}
+.seg button.on{background:var(--ink);color:var(--bg);font-weight:700}
+.amt{width:100%;font-size:46px;border:0;border-bottom:2px solid var(--ink);background:none;padding:2px 0;outline:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chip,.fchip{border:1.5px solid var(--ink);padding:5px 12px;font-size:14px}
+.fchip{border-style:dashed;font-size:13px}
+.sheet h3 button{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.sheet h3 span{font-weight:700;color:var(--ink)}
+.chip.on{background:var(--ink);color:var(--bg);font-weight:700}
+.fld{width:100%;border:0;border-bottom:1px solid var(--ink);background:none;padding:6px 0;outline:0;margin-bottom:12px}
+label.l{display:block;font-size:12px;color:var(--mute);margin-top:6px}
+.opt{display:block;width:100%;border:1.5px solid var(--rule);padding:10px 12px;margin-bottom:8px}
+.opt.rec{border-color:var(--ink);border-width:2px}
+.opt[disabled]{opacity:.35;pointer-events:none}
+.opt b{display:flex;justify-content:space-between}
+.opt span{font-size:12px;color:var(--mute)}
+.tag{font-size:11px;background:var(--ink);color:var(--bg);padding:0 6px;font-weight:500}
+.big{font-size:40px;font-weight:600;line-height:1.1}
+.goal{height:14px;background:var(--rule);position:relative;margin:10px 0 6px}
+.goal i{position:absolute;inset:0 auto 0 0;background:var(--green)}
+.tk{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink)}
+.tkl{position:absolute;top:16px;font-size:11px;color:var(--mute);transform:translateX(-50%);white-space:nowrap}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:110px;margin-top:8px}
+.wk div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:11px;color:var(--mute)}
+.wk i{display:block;width:100%;background:var(--ink)}
+.wk .hi i{background:var(--red)}
+.pf{display:grid;grid-template-columns:1fr 84px 70px 22px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)}
+.pf input,.pf select{width:100%;border:0;border-bottom:1px solid var(--ink);background:none;padding:4px 0;outline:0;font-size:14px}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;font-size:13px;z-index:20;max-width:90%}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="tabs" id="tabs"></nav>
+<div id="layer"></div>
+<script>
+(()=>{
+const Q=new URLSearchParams(location.search);
+const LS=Q.get('today')?'suiwei-test':'suiwei-v1';
+if(Q.get('reset')){try{localStorage.removeItem(LS)}catch(e){}}
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
+const dim=(y,m)=>new Date(y,m,0).getDate();
+const todayStr=()=>Q.get('today')||fmt(new Date());
+const money=n=>{n=Math.round(n);return (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('en-US')};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const $=s=>document.querySelector(s);
+const WD=['日','一','二','三','四','五','六'];
+
+function defaults(){return{
+ startDate:todayStr()<'2026-12-01'&&!Q.get('today')?'2026-12-01':todayStr(),
+ settings:{allowance:15000,fixedInside:true,saveFloor:2000,saveIdeal:7000,goalName:'存款目標',goalAmount:100000,goalStart:0},
+ fixed:[{id:'f1',name:'AI 訂閱',amount:690}],
+ pools:[{id:'p1',name:'吃東西',alloc:6500,kind:'week'},{id:'p2',name:'娛樂',alloc:3000,kind:'month'},{id:'p3',name:'交通',alloc:1500,kind:'month'},{id:'p4',name:'日用',alloc:1500,kind:'month'},{id:'p5',name:'其他',alloc:1810,kind:'month'}],
+ tx:[],income:[],deposits:[],bufLog:[],adj:[],settled:{}
+}}
+function load(){try{const r=JSON.parse(localStorage.getItem(LS));if(r&&r.pools)return Object.assign(defaults(),r)}catch(e){}return defaults()}
+let S=load();
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+let tab='today';
+try{tab=localStorage.getItem(LS+'-tab')||'today'}catch(e){}
+
+/* ---------- 期間與預算計算 ---------- */
+function periodsIn(pool,y,m){
+ const n=dim(y,m),mm=pad(m);
+ if(pool.kind==='month')return[{key:y+'-'+mm,s:y+'-'+mm+'-01',e:y+'-'+mm+'-'+pad(n),label:m+'月',short:'本月',days:n,y,m,idx:0}];
+ return[[1,7],[8,14],[15,21],[22,n]].map((c,i)=>({key:y+'-'+mm+'-W'+(i+1),s:y+'-'+mm+'-'+pad(c[0]),e:y+'-'+mm+'-'+pad(c[1]),label:m+'月第'+(i+1)+'週',short:'本週 · '+c[0]+'–'+c[1]+'日',days:c[1]-c[0]+1,y,m,idx:i+1}));
+}
+function activeDays(p){const st=S.startDate;if(p.e<st)return 0;if(p.s>=st)return p.days;return Math.round((parse(p.e)-parse(st))/864e5)+1}
+const base=(pool,p)=>Math.round(pool.alloc*activeDays(p)/dim(p.y,p.m));
+const adjSum=(pool,p)=>S.adj.filter(a=>a.pool===pool.id&&a.period===p.key).reduce((s,a)=>s+a.delta,0);
+const effective=(pool,p)=>base(pool,p)+adjSum(pool,p);
+const spentIn=(pool,p)=>S.tx.filter(t=>t.pool===pool.id&&t.date>=p.s&&t.date<=p.e).reduce((s,t)=>s+t.amount,0);
+const poolById=id=>S.pools.find(p=>p.id===id);
+function curPeriod(pool,t){t=t||todayStr();const d=parse(t);return periodsIn(pool,d.getFullYear(),d.getMonth()+1).find(p=>p.s<=t&&t<=p.e)}
+function nextPeriods(pool,p,n){const out=[];let y=p.y,m=p.m;while(out.length<n){periodsIn(pool,y,m).filter(q=>q.s>p.e).forEach(q=>{if(out.length<n)out.push(q)});m++;if(m>12){m=1;y++}}return out}
+function addAdj(pool,period,delta,note){if(delta)S.adj.push({id:uid(),pool,period,delta,note,date:todayStr()})}
+function spreadAdj(pool,ps,amt){const n=ps.length,sg=amt<0?-1:1,a=Math.abs(amt),q=Math.floor(a/n);let r=a-q*n;ps.forEach(p=>{addAdj(pool.id,p.key,sg*(q+(r-->0?1:0)),'平攤')})}
+const varBudget=()=>S.settings.allowance-(S.settings.fixedInside?S.fixed.reduce((s,f)=>s+f.amount,0):0);
+const bufBal=()=>S.bufLog.reduce((s,b)=>s+b.amount,0);
+const savedTotal=()=>S.settings.goalStart+S.deposits.reduce((s,d)=>s+d.amount,0);
+const monthOf=t=>t.slice(0,7);
+const monthSaved=t=>S.deposits.filter(d=>monthOf(d.date)===monthOf(t||todayStr())).reduce((s,d)=>s+d.amount,0);
+
+function monthAgg(t){
+ const d=parse(t),y=d.getFullYear(),m=d.getMonth()+1;let eff=0,spent=0,act=0;
+ S.pools.forEach(pool=>{periodsIn(pool,y,m).forEach(p=>{if(activeDays(p)>0)eff+=effective(pool,p);spent+=spentIn(pool,p)})});
+ const n=dim(y,m),first=S.startDate>y+'-'+pad(m)+'-01'?S.startDate:y+'-'+pad(m)+'-01';
+ act=Math.round((parse(y+'-'+pad(m)+'-'+pad(n))-parse(first))/864e5)+1;
+ return{eff,spent,n,day:d.getDate(),act,first,y,m};
+}
+
+/* ---------- 結算 ---------- */
+function pendings(){
+ const t=todayStr(),sd=parse(S.startDate),td=parse(t),out=[];let dirty=false;
+ S.pools.forEach(pool=>{if(!pool.alloc)return;let y=sd.getFullYear(),m=sd.getMonth()+1;
+  while(y<td.getFullYear()||(y===td.getFullYear()&&m<=td.getMonth()+1)){
+   periodsIn(pool,y,m).forEach(p=>{if(p.e>=t||activeDays(p)===0)return;const k=pool.id+'|'+p.key;if(S.settled[k])return;
+    const eff=effective(pool,p),diff=Math.round(eff-spentIn(pool,p));
+    if(diff===0){S.settled[k]={choice:'none',diff:0,eff,date:t};dirty=true;return}
+    out.push({pool,p,diff,k,eff})});
+   m++;if(m>12){m=1;y++}}});
+ if(dirty)save();
+ out.sort((a,b)=>a.p.e<b.p.e?-1:a.p.e>b.p.e?1:0);return out;
+}
+function otherState(pool){return S.pools.filter(x=>x.id!==pool.id&&x.alloc>=0).map(x=>{const cp=curPeriod(x);return{x,cp,rem:effective(x,cp)-spentIn(x,cp)}})}
+function recommend(it){
+ const{pool,p,diff}=it,saved=monthSaved(),f=S.settings.saveFloor,ide=S.settings.saveIdeal,others=otherState(pool);
+ if(diff>0){
+  if(saved<f)return{choice:'save',reason:'本月存款 '+money(saved)+'，還沒到保底 '+money(f)+'，先存起來最穩。'};
+  const need=others.filter(o=>o.rem<0).sort((a,b)=>a.rem-b.rem)[0];
+  if(need)return{choice:'pool',target:need.x.id,reason:need.x.name+' 目前超支 '+money(-need.rem)+'，用這筆補回去，不用動到存款。'};
+  if(saved<ide)return{choice:'save',reason:'保底已達標，離理想 '+money(ide)+' 還差 '+money(ide-saved)+'，繼續往上存。'};
+  return{choice:'buffer',reason:'存款已達理想額度，放進緩衝池，留著應付之後的超支。'};
+ }
+ const d=-diff,buf=bufBal();
+ if(buf>=d)return{choice:'buffer',reason:'緩衝池有 '+money(buf)+'，直接扣掉，之後的額度完全不受影響。'};
+ const ns=nextPeriods(pool,p,pool.kind==='week'?3:1),per=d/ns.length,avg=ns.reduce((s,q)=>s+base(pool,q),0)/ns.length,unit=pool.kind==='week'?'週':'個月';
+ if(avg>0&&per<=avg*.25)return{choice:'spread',reason:'平攤到之後 '+ns.length+' '+unit+'，每期只少 '+money(per)+'（約 '+Math.round(per/avg*100)+'%），影響不大。'};
+ const rich=others.filter(o=>o.rem>=d).sort((a,b)=>b.rem-a.rem)[0];
+ if(rich)return{choice:'pool',target:rich.x.id,reason:'平攤每期要少 '+money(per)+'，壓力偏大；'+rich.x.name+' 還剩 '+money(rich.rem)+'，從那邊扣比較合理。'};
+ return{choice:'spread',reason:'沒有其他池夠扣，只能平攤；每期少 '+money(per)+'，這段時間要節制一點。'};
+}
+function applySettle(k,choice,target){
+ const it=pendings().find(x=>x.k===k);if(!it)return;
+ const n1=S.adj.length,n2=S.deposits.length,n3=S.bufLog.length,sid=uid();
+ const{pool,p,diff,eff}=it,amt=Math.abs(diff),t=todayStr(),note=pool.name+' '+p.label+'結算';
+ if(choice!=='ignore')addAdj(pool.id,p.key,-diff,note+'（歸零）');
+ const tp=target?poolById(target):null,cp=tp?curPeriod(tp):null,ns=nextPeriods(pool,p,pool.kind==='week'?3:1);
+ if(diff>0){
+  if(choice==='save')S.deposits.push({id:uid(),date:t,amount:amt,note});
+  else if(choice==='buffer')S.bufLog.push({id:uid(),date:t,amount:amt,note});
+  else if(choice==='spread')spreadAdj(pool,ns,amt);
+  else if(choice==='pool'&&tp)addAdj(tp.id,cp.key,amt,'來自 '+note);
+ }else{
+  if(choice==='buffer')S.bufLog.push({id:uid(),date:t,amount:-amt,note});
+  else if(choice==='savings')S.deposits.push({id:uid(),date:t,amount:-amt,note:note+'（動用存款）'});
+  else if(choice==='spread')spreadAdj(pool,ns,-amt);
+  else if(choice==='pool'&&tp)addAdj(tp.id,cp.key,-amt,'補 '+note);
+ }
+ S.adj.slice(n1).forEach(a=>a.sid=sid);S.deposits.slice(n2).forEach(a=>a.sid=sid);S.bufLog.slice(n3).forEach(a=>a.sid=sid);
+ S.settled[k]={choice,diff,eff,date:t,sid};save();
+}
+
+/* ---------- 畫面 ---------- */
+function bar(spent,eff,pace){const w=eff>0?Math.min(100,spent/eff*100):(spent>0?100:0);return'<div class="bar"><i class="'+(spent>eff?'over':'')+'" style="width:'+w+'%"></i><b style="left:calc('+Math.min(100,pace*100)+'% - 1px)"></b></div>'}
+function periodPace(p,t){const el=Math.max(0,Math.min(p.days,Math.round((parse(t)-parse(p.s))/864e5)+1));return el/p.days}
+
+function viewToday(){
+ const t=todayStr(),A=monthAgg(t),d=parse(t),left=A.n-A.day+1,rem=A.eff-A.spent;
+ const todaySpent=S.tx.filter(x=>x.date===t).reduce((s,x)=>s+x.amount,0);
+ const allow=left>0?(rem+todaySpent)/left:0,todayLeft=allow-todaySpent;
+ const dBase=A.eff/A.act,elBefore=Math.max(0,Math.round((parse(t)-parse(A.first))/864e5)),gap=dBase*elBefore-(A.spent-todaySpent);
+ let h='<div class="top"><span class="d">'+(d.getMonth()+1)+'月'+d.getDate()+'日 週'+WD[d.getDay()]+'</span><span class="t">水位</span><button class="gear" data-act="settings">設定</button></div>';
+ if(t<S.startDate){const dd=Math.round((parse(S.startDate)-d)/864e5);
+  return h+'<div class="lab" style="margin-top:26px"><span>距離正式開始</span></div><div class="hero num">'+dd+' 天</div><div class="sub"><span>起算日 <b class="num">'+S.startDate.replace(/-/g,'/')+'</b></span></div><p class="say">起算日之前不計入額度與結算。可以先到「水池」調整各池額度、到「設定」確認金額，也可以先記幾筆試用，正式開始前到「設定 → 備份 / 匯入 → 清除測試資料」清掉。</p><div style="display:flex;gap:8px;margin-top:16px"><button class="btn" data-act="startnow">提前今天開始</button><button class="btn line" data-act="settings">設定</button></div>'}
+ const pend=pendings();
+ if(pend.length){const it=pend[0],r=recommend(it);
+  h+='<div class="pend"><div class="h"><span>待結算 · '+esc(it.pool.name)+' '+it.p.label+'</span><span class="num '+(it.diff<0?'neg':'')+'">'+(it.diff>0?'+':'')+money(it.diff)+'</span></div><p>'+esc(r.reason)+'</p><button class="btn" data-act="settle" data-k="'+it.k+'">處理這筆'+(pend.length>1?'（共 '+pend.length+' 筆）':'')+'</button></div>';}
+ h+='<div class="lab" style="margin-top:26px"><span>今天還能花</span></div><div class="hero num '+(todayLeft<0?'neg':'')+'">'+money(todayLeft)+'</div>';
+ h+='<div class="sub"><span>今日額度 <b class="num">'+money(allow)+'</b></span><span>已花 <b class="num">'+money(todaySpent)+'</b></span></div>';
+ h+='<div class="sub" style="margin-top:6px"><span>本月還剩 <b class="num">'+money(rem)+'</b></span><span>剩 '+left+' 天</span></div>';
+ const sv=monthSaved(t),f=S.settings.saveFloor;
+ let say=gap>=0?'比均速領先 '+money(gap)+'，每天額度因此提高到 '+money(allow)+'（基準 '+money(dBase)+'）。':'比均速多花了 '+money(-gap)+'，每天額度被壓到 '+money(allow)+'（基準 '+money(dBase)+'）。';
+ say+=sv>=f?' 本月已存 '+money(sv)+'，保底達標。':' 本月已存 '+money(sv)+'，保底還差 '+money(f-sv)+'。';
+ h+='<div class="say">'+say+'</div>';
+ h+='<div class="sec"><div class="lab"><span>各池水位</span><span>豎線＝時間進度</span></div>';
+ S.pools.forEach(pool=>{const p=curPeriod(pool,t),eff=effective(pool,p),sp=spentIn(pool,p),r=eff-sp,dl=Math.max(1,Math.round((parse(p.e)-parse(t))/864e5)+1);
+  h+='<div class="prow"><div class="ph"><span class="pn">'+esc(pool.name)+'</span><span class="pk">'+p.short+'</span><span class="pv num '+(r<0?'neg':'')+'">'+money(r)+'</span></div>'+bar(sp,eff,periodPace(p,t))+'<div class="pm">已花 '+money(sp)+' / 額度 '+money(eff)+' · 剩 '+dl+' 天，約 '+money(Math.max(0,r)/dl)+' / 天</div></div>'});
+ h+='</div><div class="sec"><div class="lab"><span>最近紀錄</span><button data-act="hist" style="text-decoration:underline;text-underline-offset:3px;color:var(--ink)">全部紀錄與月回顧</button></div>';
+ const rec=S.tx.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0).slice(0,8);
+ h+=rec.length?rec.map(x=>{const pl=poolById(x.pool);return'<div class="row"><span>'+esc(pl?pl.name:'已刪除')+(x.note?' · '+esc(x.note):'')+'<br><span class="m">'+x.date.slice(5).replace('-','/')+'</span></span><span><span class="num">'+money(x.amount)+'</span><button class="x" data-act="edittx" data-id="'+x.id+'">改</button></span></div>'}).join(''):'<div class="empty">還沒有紀錄。按下方「記一筆」開始。</div>';
+ return h+'</div>';
+}
+
+function viewPools(){
+ const vb=varBudget(),tot=S.pools.reduce((s,p)=>s+p.alloc,0),un=vb-tot;
+ let h='<div class="top"><span class="d">預算池</span><span class="t">水位</span><button class="gear" data-act="settings">設定</button></div>';
+ h+='<div class="lab"><span>可變預算（零用錢'+(S.settings.fixedInside?'扣固定支出':'')+'）</span></div><div class="big num">'+money(vb)+'</div>';
+ h+='<div class="sub"><span>已分配 <b class="num">'+money(tot)+'</b></span><span class="'+(un<0?'neg':'')+'">'+(un>=0?'未分配 ':'超配 ')+'<b class="num">'+money(Math.abs(un))+'</b></span></div>';
+ h+='<div class="sec"><div class="lab"><span>池子（每月額度）</span></div><div class="pf" style="border-bottom:1px solid var(--ink)"><span class="pm">名稱</span><span class="pm">每月額度</span><span class="pm">結算</span><span></span></div>';
+ S.pools.forEach(p=>{h+='<div class="pf"><input data-pf="name" data-id="'+p.id+'" value="'+esc(p.name)+'"><input data-pf="alloc" data-id="'+p.id+'" type="number" inputmode="numeric" value="'+p.alloc+'"><select data-pf="kind" data-id="'+p.id+'"><option value="week"'+(p.kind==='week'?' selected':'')+'>每週</option><option value="month"'+(p.kind==='month'?' selected':'')+'>每月</option></select><button class="x" data-act="delpool" data-id="'+p.id+'">刪</button></div>'});
+ h+='<div style="margin-top:14px"><button class="btn line sm" data-act="addpool">＋ 新增池子</button></div>';
+ h+='<p class="pm" style="margin-top:12px">每週池：一個月切成 4 週（1–7、8–14、15–21、22–月底），每週結算一次，額度 = 月額度按天數分配。每月池：月底結算。</p></div>';
+ const buf=bufBal();
+ h+='<div class="sec"><div class="lab"><span>緩衝池</span></div><div class="big num">'+money(buf)+'</div><p class="pm" style="margin:6px 0 10px">結算時選「放進緩衝池」的錢。專門用來補別的池的超支。</p>'+(buf>0?'<button class="btn line sm" data-act="buf2sav">全部轉進存款</button>':'');
+ const bl=S.bufLog.slice().reverse().slice(0,6);
+ h+=bl.map(b=>'<div class="row"><span>'+esc(b.note)+'<br><span class="m">'+b.date.slice(5).replace('-','/')+'</span></span><span class="num '+(b.amount<0?'neg':'')+'">'+money(b.amount)+'</span></div>').join('')+'</div>';
+ const hs=Object.keys(S.settled).filter(k=>S.settled[k].sid&&poolById(k.split('|')[0])).sort((a,b)=>S.settled[a].date<S.settled[b].date?1:-1).slice(0,5);
+ if(hs.length)h+='<div class="sec"><div class="lab"><span>最近的結算（選錯可復原）</span></div>'+hs.map(k=>{const r=S.settled[k];return'<div class="row"><span>'+esc(poolById(k.split('|')[0]).name)+' '+plabel(k)+'<br><span class="m">'+(r.diff>0?'結餘 ':'超支 ')+money(Math.abs(r.diff))+' → '+(CH[r.choice]||r.choice)+'</span></span><button class="x" data-act="undo" data-k="'+k+'">復原</button></div>'}).join('')+'</div>';
+ const ad=S.adj.filter(a=>a.note!==undefined).slice().reverse().slice(0,8);
+ if(ad.length){h+='<div class="sec"><div class="lab"><span>額度調整紀錄</span></div>'+ad.map(a=>{const pl=poolById(a.pool);return'<div class="row"><span>'+esc(pl?pl.name:'?')+' · '+a.period.replace(/^\d+-/,'')+'<br><span class="m">'+esc(a.note||'')+'</span></span><span class="num '+(a.delta<0?'neg':'')+'">'+(a.delta>0?'+':'')+money(a.delta)+'</span></div>'}).join('')+'</div>'}
+ return h;
+}
+
+function monthsTo(rem,per){return per>0?Math.ceil(rem/per):null}
+function viewSave(){
+ const t=todayStr(),g=S.settings,tot=savedTotal(),rem=Math.max(0,g.goalAmount-tot),sv=monthSaved(t),f=g.saveFloor,ide=g.saveIdeal;
+ let h='<div class="top"><span class="d">存款</span><span class="t">水位</span><button class="gear" data-act="settings">設定</button></div>';
+ h+='<div class="lab"><span>'+esc(g.goalName)+'</span><span>目標 '+money(g.goalAmount)+'</span></div><div class="big num">'+money(tot)+'</div>';
+ h+='<div class="goal"><i style="width:'+Math.min(100,g.goalAmount?tot/g.goalAmount*100:0)+'%"></i></div><div class="pm">完成 '+Math.round(g.goalAmount?tot/g.goalAmount*100:0)+'% · 還差 '+money(rem)+'</div>';
+ const sd=parse(S.startDate),days=Math.max(1,Math.round((parse(t)-sd)/864e5)+1),net=S.deposits.reduce((s,d)=>s+d.amount,0),avg=days>=14?net/days*30.4:0;
+ const eta=(l,v)=>{const m=monthsTo(rem,v);return'<div class="row"><span>'+l+'</span><span class="num">'+(m==null?'—':rem<=0?'已達成':m+' 個月')+'</span></div>'};
+ h+='<div style="margin-top:8px">'+eta('每月存保底 '+money(f),f)+eta('每月存理想 '+money(ide),ide)+eta('照你目前的速度'+(avg>0?'（月均 '+money(avg)+'）':'（資料不足）'),avg)+'</div>';
+ h+='<div class="sec"><div class="lab"><span>本月存款</span><span class="num">'+money(sv)+'</span></div>';
+ const sc=Math.max(ide,sv,1);
+ h+='<div class="goal" style="margin-bottom:26px"><i style="width:'+Math.min(100,sv/sc*100)+'%;background:'+(sv>=f?'var(--green)':'var(--ink)')+'"></i><span class="tk" style="left:'+f/sc*100+'%"></span><span class="tkl" style="left:'+f/sc*100+'%">保底 '+money(f)+'</span><span class="tk" style="left:calc('+ide/sc*100+'% - 2px)"></span><span class="tkl" style="left:calc('+Math.min(92,ide/sc*100)+'%)">理想 '+money(ide)+'</span></div>';
+ const needF=Math.max(0,f-sv),needI=Math.max(0,ide-sv);
+ h+='<p class="say" style="margin-top:6px">'+(needF>0?'保底還差 '+money(needF)+'。收入不固定，收到錢先存保底，再分配給各池。':needI>0?'保底已達標。離理想還差 '+money(needI)+'，有多的收入再補。':'本月存款已達理想額度。')+'</p>';
+ h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">'+(needF>0?'<button class="btn" data-act="quicksave" data-v="'+needF+'">存保底差額 '+money(needF)+'</button>':'')+(needI>0&&needI!==needF?'<button class="btn line" data-act="quicksave" data-v="'+needI+'">存到理想 '+money(needI)+'</button>':'')+'<button class="btn line" data-act="add" data-kind="sav">自訂存入</button></div></div>';
+ const mi=S.income.filter(i=>monthOf(i.date)===monthOf(t));
+ h+='<div class="sec"><div class="lab"><span>本月收入（不固定）</span><span class="num">'+money(mi.reduce((s,i)=>s+i.amount,0))+'</span></div>';
+ h+=mi.length?mi.slice().reverse().map(i=>'<div class="row"><span>'+esc(i.note||'收入')+'<br><span class="m">'+i.date.slice(5).replace('-','/')+'</span></span><span><span class="num">'+money(i.amount)+'</span><button class="x" data-act="delinc" data-id="'+i.id+'">刪</button></span></div>').join(''):'<div class="empty">本月還沒記收入。</div>';
+ h+='<button class="btn line sm" style="margin-top:10px" data-act="add" data-kind="inc">＋ 記一筆收入</button></div>';
+ h+='<div class="sec"><div class="lab"><span>存款紀錄</span></div>';
+ const ds=S.deposits.slice().reverse().slice(0,10);
+ h+=ds.length?ds.map(d=>'<div class="row"><span>'+esc(d.note||'存入')+'<br><span class="m">'+d.date.slice(5).replace('-','/')+'</span></span><span><span class="num '+(d.amount<0?'neg':'')+'">'+money(d.amount)+'</span><button class="x" data-act="deldep" data-id="'+d.id+'">刪</button></span></div>').join(''):'<div class="empty">還沒有存款紀錄。</div>';
+ return h+'</div>';
+}
+
+const CH={save:'存下來',buffer:'進緩衝池',spread:'平攤',pool:'轉到其他池',savings:'動用存款',ignore:'不處理',none:'剛好'};
+function viewStats(){
+ const t=todayStr();let h='<div class="top"><span class="d">分析</span><span class="t">水位</span><button class="gear" data-act="settings">設定</button></div>';
+ const A=monthAgg(t),el=Math.max(1,Math.round((parse(t)-parse(A.first))/864e5)+1);
+ h+='<div class="lab"><span>月底預測（照目前節奏）</span></div>';
+ if(el<3)h+='<div class="empty">記滿 3 天後開始預測。</div>';
+ else{let tl=0;
+  const rows=S.pools.map(pool=>{let eff=0,sp=0;periodsIn(pool,A.y,A.m).forEach(p=>{if(activeDays(p)>0)eff+=effective(pool,p);sp+=spentIn(pool,p)});
+   const proj=sp/el*A.act,diff=eff-proj;tl+=diff;
+   return'<div class="row"><span>'+esc(pool.name)+'<br><span class="m">已花 '+money(sp)+' → 預估 '+money(proj)+' / 額度 '+money(eff)+'</span></span><span class="num '+(diff<0?'neg':'')+'">'+(diff>=0?'+':'')+money(diff)+'</span></div>'}).join('');
+  h+=rows+'<div class="row" style="border-bottom:2px solid var(--ink)"><b>合計預估月底結餘</b><b class="num '+(tl<0?'neg':'')+'">'+(tl>=0?'+':'')+money(tl)+'</b></div>';
+  h+='<p class="say">'+(tl>=0?'照這個速度月底大約會剩 '+money(tl)+'，可以直接存下來。':'照這個速度月底會超支約 '+money(-tl)+'，建議從現在開始把每天額度抓緊一點。')+'</p>';}
+ h+='<div class="sec"><div class="lab"><span>一週哪天花最多</span></div>';
+ if(S.tx.length<3)h+='<div class="empty">紀錄還不夠，多記幾天就會看到節奏。</div>';
+ else{const sums=Array(7).fill(0),cnt=Array(7).fill(0),first=S.tx.reduce((m,x)=>x.date<m?x.date:m,S.startDate<t?S.startDate:t);
+  for(let d=parse(first);fmt(d)<=t;d.setDate(d.getDate()+1))cnt[d.getDay()]++;
+  S.tx.forEach(x=>{sums[parse(x.date).getDay()]+=x.amount});
+  const av=sums.map((s,i)=>s/Math.max(1,cnt[i])),mx=Math.max(...av,1),hi=av.indexOf(Math.max(...av));
+  h+='<div class="wk">'+av.map((v,i)=>'<div class="'+(i===hi?'hi':'')+'"><span class="num">'+(v?Math.round(v):'')+'</span><i style="height:'+Math.max(2,v/mx*70)+'px"></i>'+WD[i]+'</div>').join('')+'</div><p class="say">平均每個週'+WD[hi]+'花最多（約 '+money(av[hi])+'），遇到那天可以先預留額度。</p>';}
+ h+='</div><div class="sec"><div class="lab"><span>預算校準建議</span></div>';
+ const tips=[];
+ S.pools.forEach(pool=>{const rs=Object.keys(S.settled).filter(k=>k.startsWith(pool.id+'|')).map(k=>S.settled[k]).filter(r=>r.eff>0);
+  if(rs.length<2)return;const sd=rs.reduce((s,r)=>s+r.diff,0),se=rs.reduce((s,r)=>s+r.eff,0),ratio=sd/se;
+  if(ratio<-.08)tips.push(esc(pool.name)+' 近 '+rs.length+' 期平均超支 '+Math.round(-ratio*100)+'%，預算可能設太緊。建議每月調高約 '+money(-ratio*pool.alloc)+'。');
+  else if(ratio>.2)tips.push(esc(pool.name)+' 近 '+rs.length+' 期平均剩 '+Math.round(ratio*100)+'%，預算偏寬。可以調低約 '+money(ratio*pool.alloc*.7)+'，多存一點。')});
+ h+=tips.length?tips.map(x=>'<div class="say" style="margin-bottom:10px">'+x+'</div>').join(''):'<div class="empty">結算滿 2 期後，這裡會告訴你哪個池預算設得不合理。</div>';
+ h+='</div><div class="sec"><div class="lab"><span>你的結算習慣</span></div>';
+ const sv=Object.values(S.settled).filter(r=>r.diff!==0),cnt=(sg)=>{const o={};sv.filter(r=>Math.sign(r.diff)===sg).forEach(r=>{o[r.choice]=(o[r.choice]||0)+1});return Object.keys(o).map(k=>(CH[k]||k)+' ×'+o[k]).join('、')||'尚無'};
+ h+='<div class="row"><span>有結餘時</span><span>'+cnt(1)+'</span></div><div class="row"><span>超支時</span><span>'+cnt(-1)+'</span></div></div>';
+ return h;
+}
+
+/* ---------- 渲染與互動 ---------- */
+function render(){
+ const v={today:viewToday,pools:viewPools,save:viewSave,stats:viewStats}[tab]();
+ $('#app').innerHTML=v;
+ const T=[['today','今天'],['pools','水池'],['add','記一筆'],['save','存款'],['stats','分析']];
+ $('#tabs').innerHTML=T.map(x=>x[0]==='add'?'<button class="add" data-act="add" data-kind="exp">記一筆</button>':'<button class="'+(tab===x[0]?'on':'')+'" data-tab="'+x[0]+'">'+x[1]+'</button>').join('');
+}
+function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),2200)}
+function sheet(html){$('#layer').innerHTML='<div class="back" data-act="close"></div><div class="sheet">'+html+'</div>'}
+function closeSheet(){$('#layer').innerHTML=''}
+const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n};
+
+let addKind='exp',addPool=null,editId=null;
+function favs(){const m={};S.tx.forEach(x=>{if(!x.note||!poolById(x.pool))return;const k=x.pool+'|'+x.note;const o=m[k]=m[k]||{pool:x.pool,note:x.note,n:0,amt:0};o.n++;o.amt=x.amount});return Object.values(m).filter(f=>f.n>=2).sort((a,b)=>b.n-a.n).slice(0,6)}
+function openAdd(kind,id){
+ editId=id||null;const ex=editId?S.tx.find(x=>x.id===editId):null;
+ if(ex){kind='exp';addPool=ex.pool}
+ addKind=kind;if(!addPool||!poolById(addPool))addPool=S.pools[0]&&S.pools[0].id;
+ const t=ex?ex.date:todayStr(),fv=!ex&&kind==='exp'?favs():[];
+ sheet((ex?'<h3><span>修改支出</span><button data-act="close">關閉</button></h3>':'<div class="seg"><button data-kind="exp" class="'+(kind==='exp'?'on':'')+'">支出</button><button data-kind="inc" class="'+(kind==='inc'?'on':'')+'">收入</button><button data-kind="sav" class="'+(kind==='sav'?'on':'')+'">存入</button></div>')+
+ (fv.length?'<label class="l">常用（點一下帶入）</label><div class="chips" style="margin:6px 0 4px">'+fv.map((f,i)=>'<button class="fchip" data-act="fav" data-i="'+i+'">'+esc(f.note)+' '+money(f.amt)+'</button>').join('')+'</div>':'')+
+ '<input id="a-amt" class="amt num" type="number" inputmode="decimal" placeholder="0" value="'+(ex?ex.amount:'')+'">'+
+ (kind==='exp'?'<div class="chips">'+S.pools.map(p=>'<button class="chip '+(p.id===addPool?'on':'')+'" data-pool="'+p.id+'">'+esc(p.name)+'</button>').join('')+'</div>':'<div style="height:14px"></div>')+
+ '<input id="a-note" class="fld" placeholder="備註（選填，常用的會自動記住）" value="'+(ex?esc(ex.note):'')+'"><label class="l">日期</label><input id="a-date" class="fld" type="date" value="'+t+'">'+
+ '<div style="display:flex;gap:8px"><button class="btn" data-act="saveadd">儲存</button><button class="btn line" data-act="close">取消</button>'+(ex?'<button class="btn line" style="margin-left:auto;color:var(--red);border-color:var(--red)" data-act="deltx">刪除</button>':'')+'</div>');
+ setTimeout(()=>{const e=$('#a-amt');e&&!ex&&e.focus()},50);
+}
+function doAdd(){
+ const amt=num($('#a-amt').value),date=$('#a-date').value||todayStr(),note=$('#a-note').value.trim();
+ if(amt<=0){toast('請輸入金額');return}
+ if(editId){const ex=S.tx.find(x=>x.id===editId);if(ex){ex.amount=amt;ex.date=date;ex.note=note;ex.pool=addPool}editId=null;save();closeSheet();render();toast('已修改');return}
+ if(addKind==='exp'){if(!addPool){toast('請先建立池子');return}S.tx.push({id:uid(),date,pool:addPool,amount:amt,note});
+  const pl=poolById(addPool),p=curPeriod(pl,date),r=effective(pl,p)-spentIn(pl,p);save();closeSheet();render();toast(pl.name+' 剩 '+money(r));return}
+ if(addKind==='inc'){S.income.push({id:uid(),date,amount:amt,note});save();closeSheet();tab='save';render();toast('已記收入。先存保底吧');return}
+ S.deposits.push({id:uid(),date,amount:amt,note:note||'存入'});save();closeSheet();render();toast('已存入 '+money(amt));
+}
+function openHistory(ym){
+ const hm=ym||monthOf(todayStr()),a=hm.split('-').map(Number),y=a[0],m=a[1];
+ const prev=m===1?(y-1)+'-12':y+'-'+pad(m-1),next=m===12?(y+1)+'-01':y+'-'+pad(m+1);
+ let h='<h3><button data-act="hist" data-m="'+prev+'">‹ 上月</button><span>'+y+' 年 '+m+' 月回顧</span><button data-act="hist" data-m="'+next+'">下月 ›</button></h3>';
+ const tx=S.tx.filter(x=>monthOf(x.date)===hm).sort((p,q)=>p.date<q.date?1:p.date>q.date?-1:0),spent=tx.reduce((s,x)=>s+x.amount,0);
+ const inc=S.income.filter(i=>monthOf(i.date)===hm).reduce((s,i)=>s+i.amount,0),sv=monthSaved(hm+'-01');
+ h+='<div class="sub" style="margin:0 0 6px"><span>支出 <b class="num">'+money(spent)+'</b></span><span>收入 <b class="num">'+money(inc)+'</b></span><span>存款 <b class="num">'+money(sv)+'</b></span></div>';
+ h+=S.pools.map(pool=>{let eff=0,sp=0;periodsIn(pool,y,m).forEach(p=>{if(activeDays(p)>0)eff+=effective(pool,p);sp+=spentIn(pool,p)});
+  return'<div class="row"><span>'+esc(pool.name)+'<br><span class="m">額度 '+money(eff)+'</span></span><span class="num '+(sp>eff&&eff>0?'neg':'')+'">'+money(sp)+'</span></div>'}).join('');
+ h+='<div class="lab" style="margin-top:16px"><span>明細（點「改」可修改）</span></div>';
+ h+=tx.length?tx.map(x=>{const pl=poolById(x.pool);return'<div class="row"><span>'+esc(pl?pl.name:'已刪除')+(x.note?' · '+esc(x.note):'')+'<br><span class="m">'+x.date.slice(5).replace('-','/')+' 週'+WD[parse(x.date).getDay()]+'</span></span><span><span class="num">'+money(x.amount)+'</span><button class="x" data-act="edittx" data-id="'+x.id+'">改</button></span></div>'}).join(''):'<div class="empty">這個月沒有支出紀錄。</div>';
+ sheet(h);
+}
+function plabel(k){const a=k.split('|')[1].split('-'),m=+a[1];return a[2]?m+'月第'+a[2].slice(1)+'週':m+'月'}
+function csvDownload(){
+ const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',rows=[];
+ S.tx.forEach(x=>{const p=poolById(x.pool);rows.push([x.date,'支出',p?p.name:'',x.amount,x.note])});
+ S.income.forEach(x=>rows.push([x.date,'收入','',x.amount,x.note]));
+ S.deposits.forEach(x=>rows.push([x.date,'存款','',x.amount,x.note]));
+ rows.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0);rows.unshift(['日期','類型','池子','金額','備註']);
+ const blob=new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='水位-'+todayStr()+'.csv';document.body.appendChild(a);a.click();a.remove();
+}
+function openSettle(k){
+ const it=pendings().find(x=>x.k===k);if(!it){closeSheet();render();return}
+ const{pool,p,diff}=it,r=recommend(it),amt=Math.abs(diff),others=otherState(pool),buf=bufBal();
+ const unit=pool.kind==='week'?'週':'個月',ns=nextPeriods(pool,p,pool.kind==='week'?3:1);
+ const o=(c,tg,title,desc,dis)=>'<button class="opt '+((r.choice===c&&(r.target||'')===(tg||''))?'rec':'')+'" '+(dis?'disabled ':'')+'data-act="dosettle" data-k="'+k+'" data-c="'+c+'" data-t="'+(tg||'')+'"><b><span>'+title+'</span>'+((r.choice===c&&(r.target||'')===(tg||''))?'<span class="tag">建議</span>':'')+'</b><span>'+desc+'</span></button>';
+ let h='<h3><span>結算 · '+esc(pool.name)+' '+p.label+'</span><button data-act="close">關閉</button></h3><div class="big num '+(diff<0?'neg':'')+'">'+(diff>0?'結餘 ':'超支 ')+money(amt)+'</div><p class="say" style="margin:10px 0 14px">'+esc(r.reason)+'</p>';
+ if(diff>0){
+  h+=o('save','','存下來（進存款）','保底 '+money(S.settings.saveFloor)+'，本月已存 '+money(monthSaved()));
+  h+=o('buffer','','放進緩衝池','目前 '+money(buf)+'，用來補之後的超支');
+  h+=o('spread','','平攤到之後 '+ns.length+' '+unit,'每期多 '+money(amt/ns.length));
+  others.forEach(x=>{h+=o('pool',x.x.id,'補給 '+esc(x.x.name),x.cp.short+' 目前剩 '+money(x.rem))});
+ }else{
+  h+=o('buffer','','從緩衝池扣','目前 '+money(buf),buf<amt);
+  h+=o('spread','','平攤到之後 '+ns.length+' '+unit,'每期少 '+money(amt/ns.length));
+  others.forEach(x=>{h+=o('pool',x.x.id,'從 '+esc(x.x.name)+' 扣',x.cp.short+' 目前剩 '+money(x.rem),x.rem<amt)});
+  h+=o('savings','','動用存款','不建議，會減少存款進度');
+  h+=o('ignore','','先不處理（記為超支）','這期維持負數，不調整其他額度');
+ }
+ sheet(h);
+}
+function openSettings(){
+ const g=S.settings;
+ sheet('<h3><span>設定</span><button data-act="close">關閉</button></h3>'+
+ '<label class="l">每月零用錢</label><input id="s-allow" class="fld" type="number" value="'+g.allowance+'">'+
+ '<label class="l"><input id="s-in" type="checkbox" '+(g.fixedInside?'checked':'')+'> 固定支出已包含在零用錢內（會先從零用錢扣掉）</label>'+
+ '<label class="l" style="margin-top:12px">固定支出</label>'+S.fixed.map((f,i)=>'<div class="pf" style="grid-template-columns:1fr 90px 22px"><input data-fi="'+i+'" data-ff="name" value="'+esc(f.name)+'"><input data-fi="'+i+'" data-ff="amount" type="number" value="'+f.amount+'"><button class="x" data-act="delfix" data-i="'+i+'">刪</button></div>').join('')+
+ '<button class="btn line sm" style="margin:8px 0 14px" data-act="addfix">＋ 新增固定支出</button>'+
+ '<label class="l">每月存款保底</label><input id="s-floor" class="fld" type="number" value="'+g.saveFloor+'">'+
+ '<label class="l">每月存款理想</label><input id="s-ideal" class="fld" type="number" value="'+g.saveIdeal+'">'+
+ '<label class="l">存款目標名稱</label><input id="s-gname" class="fld" value="'+esc(g.goalName)+'">'+
+ '<label class="l">存款目標金額</label><input id="s-gamt" class="fld" type="number" value="'+g.goalAmount+'">'+
+ '<label class="l">目前已有存款（起始）</label><input id="s-gstart" class="fld" type="number" value="'+g.goalStart+'">'+
+ '<label class="l">起算日（這天之前的額度不計）</label><input id="s-start" class="fld" type="date" value="'+S.startDate+'">'+
+ '<div style="display:flex;gap:8px;margin-top:6px"><button class="btn" data-act="savesettings">儲存</button><button class="btn line" data-act="backup">備份 / 匯入</button></div>');
+}
+function collectSettings(){
+ const g=S.settings;g.allowance=num($('#s-allow').value);g.fixedInside=$('#s-in').checked;g.saveFloor=num($('#s-floor').value);g.saveIdeal=num($('#s-ideal').value);
+ g.goalName=$('#s-gname').value||'存款目標';g.goalAmount=num($('#s-gamt').value);g.goalStart=num($('#s-gstart').value);S.startDate=$('#s-start').value||S.startDate;
+ document.querySelectorAll('[data-fi]').forEach(e=>{const f=S.fixed[+e.dataset.fi];f[e.dataset.ff]=e.dataset.ff==='amount'?num(e.value):e.value});
+}
+
+document.addEventListener('click',e=>{
+ const tb=e.target.closest('[data-tab]');if(tb){tab=tb.dataset.tab;try{localStorage.setItem(LS+'-tab',tab)}catch(_){}render();scrollTo(0,0);return}
+ const kb=e.target.closest('.seg [data-kind]');if(kb){openAdd(kb.dataset.kind);return}
+ const pc=e.target.closest('[data-pool]');if(pc){addPool=pc.dataset.pool;document.querySelectorAll('[data-pool]').forEach(c=>c.classList.toggle('on',c===pc));return}
+ const a=e.target.closest('[data-act]');if(!a)return;const act=a.dataset.act,ds=a.dataset;
+ if(act==='close')closeSheet();
+ else if(act==='add')openAdd(ds.kind||'exp');
+ else if(act==='saveadd')doAdd();
+ else if(act==='settle')openSettle(ds.k);
+ else if(act==='dosettle'){applySettle(ds.k,ds.c,ds.t);closeSheet();render();const nx=pendings();toast('已結算');if(nx.length)setTimeout(()=>openSettle(nx[0].k),350)}
+ else if(act==='settings')openSettings();
+ else if(act==='savesettings'){collectSettings();save();closeSheet();render();toast('已儲存')}
+ else if(act==='addfix'){collectSettings();S.fixed.push({id:uid(),name:'',amount:0});openSettings()}
+ else if(act==='delfix'){collectSettings();S.fixed.splice(+ds.i,1);openSettings()}
+ else if(act==='edittx')openAdd('exp',ds.id);
+ else if(act==='deltx'){if(editId&&confirm('刪除這筆支出？')){S.tx=S.tx.filter(x=>x.id!==editId);editId=null;save();closeSheet();render();toast('已刪除')}}
+ else if(act==='fav'){const f=favs()[+ds.i];if(f){$('#a-amt').value=f.amt;$('#a-note').value=f.note;addPool=f.pool;document.querySelectorAll('[data-pool]').forEach(c=>c.classList.toggle('on',c.dataset.pool===f.pool))}}
+ else if(act==='hist')openHistory(ds.m);
+ else if(act==='undo'){const r=S.settled[ds.k];if(r&&r.sid&&confirm('復原這次結算？相關的存款、緩衝池與額度調整會一併撤回，並回到待結算。')){S.adj=S.adj.filter(x=>x.sid!==r.sid);S.deposits=S.deposits.filter(x=>x.sid!==r.sid);S.bufLog=S.bufLog.filter(x=>x.sid!==r.sid);delete S.settled[ds.k];save();render();toast('已復原')}}
+ else if(act==='startnow'){S.startDate=todayStr();save();render();toast('從今天開始計算')}
+ else if(act==='csv')csvDownload();
+ else if(act==='cleardata'){if(confirm('清除所有支出、收入、存款、結算紀錄？設定、池子額度與固定支出會保留。')){S.tx=[];S.income=[];S.deposits=[];S.bufLog=[];S.adj=[];S.settled={};save();closeSheet();render();toast('已清除測試資料')}}
+ else if(act==='delinc'){if(confirm('刪除這筆收入？')){S.income=S.income.filter(x=>x.id!==ds.id);save();render()}}
+ else if(act==='deldep'){if(confirm('刪除這筆存款紀錄？')){S.deposits=S.deposits.filter(x=>x.id!==ds.id);save();render()}}
+ else if(act==='quicksave'){S.deposits.push({id:uid(),date:todayStr(),amount:+ds.v,note:'存款'});save();render();toast('已存入 '+money(+ds.v))}
+ else if(act==='buf2sav'){const b=bufBal();if(b>0){S.bufLog.push({id:uid(),date:todayStr(),amount:-b,note:'轉進存款'});S.deposits.push({id:uid(),date:todayStr(),amount:b,note:'緩衝池轉入'});save();render();toast('已轉入存款')}}
+ else if(act==='addpool'){S.pools.push({id:uid(),name:'新池子',alloc:0,kind:'month'});save();render()}
+ else if(act==='delpool'){if(S.tx.some(x=>x.pool===ds.id)){alert('這個池子已有支出紀錄，無法刪除。可以改名，或把額度設為 0。');return}S.pools=S.pools.filter(p=>p.id!==ds.id);save();render()}
+ else if(act==='backup'){collectSettings();save();sheet('<h3><span>備份 / 匯入</span><button data-act="close">關閉</button></h3><p class="pm" style="margin-bottom:8px">複製下面的文字存起來就是備份；貼上備份文字再按匯入可還原（會覆蓋目前資料）。</p><textarea id="bk" class="fld" rows="8" style="border:1px solid var(--ink);padding:6px;font-size:12px">'+esc(JSON.stringify(S))+'</textarea><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="import">匯入</button><button class="btn line" data-act="csv">下載 CSV</button></div><div class="sec" style="margin-top:18px"><p class="pm" style="margin-bottom:8px">正式開始前，把試用時記的資料清掉：</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn line" data-act="cleardata">清除測試資料</button><button class="btn line" data-act="resetall">全部重來（含設定）</button></div></div>')}
+ else if(act==='import'){try{const r=JSON.parse($('#bk').value);if(!r.pools)throw 0;S=Object.assign(defaults(),r);save();closeSheet();render();toast('已匯入')}catch(_){alert('格式不正確')}}
+ else if(act==='resetall'){if(confirm('確定清空所有資料？')){S=defaults();save();closeSheet();render()}}
+});
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset.pf)return;const p=poolById(t.dataset.id);if(!p)return;
+ p[t.dataset.pf]=t.dataset.pf==='alloc'?num(t.value):t.value;save();render()});
+render();
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!Q.get('today'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+window.__app={get S(){return S},render,pendings,recommend};
+})();
+</script>
+</body>
+</html>
