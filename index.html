@@ -3,18 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0b1024">
 <title>水位</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
-:root{--bg:#ffffff;--ink:#1e2433;--mute:#7b8394;--rule:#e6e9f0;--red:#d9605a;--blue:#4a78d0;--green:#4a78d0;--soft:#f2f6fd;--redsoft:#fdeeed}
-:root{color-scheme:light}
+:root{--bg:#0b1024;--panel:#141a35;--ink:#eceff9;--mute:#a1a9c7;--rule:rgba(220,228,255,.16);--red:#e5807c;--blue:#86a5ee;--green:#86a5ee;--on:#0d1330;--soft:rgba(160,180,255,.09);--redsoft:rgba(229,128,124,.13)}
+:root{color-scheme:dark}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(125deg,#0a0f22,#17214a,#2b2f63,#1a2b55,#0d1630,#2a2458,#0a0f22);background-size:400% 400%;animation:drift 45s ease-in-out infinite}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 88% 4%,rgba(236,239,249,.20),rgba(236,239,249,0) 34%),radial-gradient(1.5px 1.5px at 12% 18%,rgba(255,255,255,.8),transparent),radial-gradient(1px 1px at 30% 62%,rgba(255,255,255,.6),transparent),radial-gradient(1.5px 1.5px at 55% 30%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 72% 78%,rgba(255,255,255,.6),transparent),radial-gradient(1.5px 1.5px at 90% 52%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 8% 88%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 44% 92%,rgba(255,255,255,.5),transparent);animation:twinkle 7s ease-in-out infinite alternate}
+@keyframes drift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes twinkle{from{opacity:.55}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){body::before,body::after{animation:none}}
+.t{display:inline-flex;align-items:center;gap:8px}
+.t svg{display:block}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg)}
-body{background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;min-height:100vh}
+body{background:transparent;color:var(--ink);font:15px/1.55 -apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0;text-align:left}
 .num{font-family:"Iowan Old Style","Noto Serif TC","Songti TC",Georgia,serif;font-variant-numeric:tabular-nums lining-nums;letter-spacing:-.01em}
@@ -43,32 +50,32 @@ button{cursor:pointer;background:none;border:0;padding:0;text-align:left}
 .pend{border:2px solid var(--red);padding:12px 14px;margin-top:22px;background:var(--redsoft)}
 .pend .h{font-weight:700;display:flex;justify-content:space-between;gap:8px}
 .pend p{font-size:13px;color:var(--mute);margin:4px 0 10px}
-.btn{display:inline-block;background:var(--blue);color:#fff;padding:8px 16px;font-weight:600;font-size:14px;border-radius:3px}
-.btn.line{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
-.pend .btn{background:var(--red)}
+.btn{display:inline-block;background:var(--blue);color:var(--on);padding:8px 16px;font-weight:700;font-size:14px;border-radius:3px}
+.btn.line{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.pend .btn{background:var(--red);color:var(--on)}
 .btn.sm{padding:5px 10px;font-size:12px}
 .btn[disabled]{opacity:.3;pointer-events:none}
 .row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px;align-items:baseline}
 .row .m{color:var(--mute);font-size:12px}
 .row .x{color:var(--mute);font-size:12px;text-decoration:underline;padding-left:8px}
 .empty{color:var(--mute);font-size:13px;padding:12px 0}
-.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr 1.35fr 1fr 1fr;padding-bottom:env(safe-area-inset-bottom);z-index:5;max-width:480px;margin:0 auto}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(10,15,36,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr 1.35fr 1fr 1fr;padding-bottom:env(safe-area-inset-bottom);z-index:5;max-width:480px;margin:0 auto}
 .tabs button{padding:15px 0 13px;text-align:center;font-size:14px;color:var(--mute);border-bottom:3px solid transparent;letter-spacing:.1em}
 .tabs button.on{color:var(--blue);font-weight:700;border-bottom-color:var(--blue)}
-.tabs button.add{background:var(--blue);color:#fff;font-weight:700;border-bottom:0}
+.tabs button.add{background:var(--blue);color:var(--on);font-weight:700;border-bottom:0}
 .back{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10}
-.sheet{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:var(--bg);border-top:3px solid var(--blue);z-index:11;max-height:90vh;overflow:auto;padding:18px 20px calc(24px + env(safe-area-inset-bottom))}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:var(--panel);border-top:3px solid var(--blue);z-index:11;max-height:90vh;overflow:auto;padding:18px 20px calc(24px + env(safe-area-inset-bottom))}
 .sheet h3{font-size:13px;letter-spacing:.14em;color:var(--mute);font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between}
 .seg{display:flex;border:1.5px solid var(--blue);margin-bottom:14px;border-radius:3px;overflow:hidden}
 .seg button{flex:1;text-align:center;padding:7px 0;font-size:14px;color:var(--blue)}
-.seg button.on{background:var(--blue);color:#fff;font-weight:700}
+.seg button.on{background:var(--blue);color:var(--on);font-weight:700}
 .amt{width:100%;font-size:46px;border:0;border-bottom:2px solid var(--blue);background:none;padding:2px 0;outline:0}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
 .chip,.fchip{border:1.5px solid var(--blue);padding:5px 12px;font-size:14px;border-radius:3px;color:var(--blue)}
 .fchip{border-style:dashed;font-size:13px}
 .sheet h3 button{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
 .sheet h3 span{font-weight:700;color:var(--ink)}
-.chip.on{background:var(--blue);color:#fff;font-weight:700}
+.chip.on{background:var(--blue);color:var(--on);font-weight:700}
 .fld{width:100%;border:0;border-bottom:1px solid var(--ink);background:none;padding:6px 0;outline:0;margin-bottom:12px}
 label.l{display:block;font-size:12px;color:var(--mute);margin-top:6px}
 .opt{display:block;width:100%;border:1.5px solid var(--rule);padding:10px 12px;margin-bottom:8px}
@@ -76,7 +83,7 @@ label.l{display:block;font-size:12px;color:var(--mute);margin-top:6px}
 .opt[disabled]{opacity:.35;pointer-events:none}
 .opt b{display:flex;justify-content:space-between}
 .opt span{font-size:12px;color:var(--mute)}
-.tag{font-size:11px;background:var(--blue);color:#fff;padding:0 6px;font-weight:500;border-radius:2px}
+.tag{font-size:11px;background:var(--blue);color:var(--on);padding:0 6px;font-weight:500;border-radius:2px}
 .big{font-size:40px;font-weight:600;line-height:1.1}
 .goal{height:14px;background:var(--rule);position:relative;margin:10px 0 6px}
 .goal i{position:absolute;inset:0 auto 0 0;background:var(--green)}
@@ -88,7 +95,7 @@ label.l{display:block;font-size:12px;color:var(--mute);margin-top:6px}
 .wk .hi i{background:var(--red);opacity:1}
 .pf{display:grid;grid-template-columns:1fr 84px 70px 22px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)}
 .pf input,.pf select{width:100%;border:0;border-bottom:1px solid var(--ink);background:none;padding:4px 0;outline:0;font-size:14px}
-.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;font-size:13px;z-index:20;max-width:90%}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--ink);color:var(--on);padding:8px 16px;font-size:13px;z-index:20;max-width:90%}
 </style>
 </head>
 <body>
@@ -124,6 +131,15 @@ function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
 let tab='today';
 try{tab=localStorage.getItem(LS+'-tab')||'today'}catch(e){}
 
+/* ---------- 月相 ---------- */
+function moonPhase(t){const d=parse(t),L=29.530588853,days=(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),12)-Date.UTC(2000,0,6,18,14))/864e5;return(((days%L)+L)%L)/L}
+function moonSvg(){
+ const p=moonPhase(todayStr()),r=13,k=Math.cos(2*Math.PI*p),rx=(Math.abs(k)*r).toFixed(2);
+ let lit='';
+ if(Math.abs(p-.5)<.018)lit='<circle r="13" fill="#eceff9"/>';
+ else if(p>.018&&p<.982){const wax=p<.5;lit='<path d="M0 -13A13 13 0 0 '+(wax?1:0)+' 0 13A'+rx+' 13 0 0 '+(wax?(k>0?0:1):(k>0?1:0))+' 0 -13Z" fill="#eceff9"/>'}
+ return'<svg width="30" height="30" viewBox="-15 -15 30 30" aria-label="月相"><circle r="13" fill="#2a3160" stroke="rgba(236,239,249,.35)" stroke-width="1"/>'+lit+'<circle r="13" fill="none" stroke="rgba(236,239,249,.5)" stroke-width=".8"/></svg>';
+}
 /* ---------- 期間與預算計算 ---------- */
 function periodsIn(pool,y,m){
  const n=dim(y,m),mm=pad(m);
@@ -215,7 +231,7 @@ function viewToday(){
  const todaySpent=S.tx.filter(x=>x.date===t).reduce((s,x)=>s+x.amount,0);
  const allow=left>0?(rem+todaySpent)/left:0,todayLeft=allow-todaySpent;
  const dBase=A.eff/A.act,elBefore=Math.max(0,Math.round((parse(t)-parse(A.first))/864e5)),gap=dBase*elBefore-(A.spent-todaySpent);
- let h='<div class="top"><span class="d">'+(d.getMonth()+1)+'月'+d.getDate()+'日 週'+WD[d.getDay()]+'</span><span class="t">水位</span><button class="gear" data-act="settings">設定</button></div>';
+ let h='<div class="top"><span class="d">'+(d.getMonth()+1)+'月'+d.getDate()+'日 週'+WD[d.getDay()]+'</span><span class="t">'+moonSvg()+'水位</span><button class="gear" data-act="settings">設定</button></div>';
  if(t<S.startDate){const dd=Math.round((parse(S.startDate)-d)/864e5);
   return h+'<div class="lab" style="margin-top:26px"><span>距離正式開始</span></div><div class="hero num">'+dd+' 天</div><div class="sub"><span>起算日 <b class="num">'+S.startDate.replace(/-/g,'/')+'</b></span></div><p class="say">起算日之前不計入額度與結算。可以先到「水池」調整各池額度、到「設定」確認金額，也可以先記幾筆試用，正式開始前到「設定 → 備份 / 匯入 → 清除測試資料」清掉。</p><div style="display:flex;gap:8px;margin-top:16px"><button class="btn" data-act="startnow">提前今天開始</button><button class="btn line" data-act="settings">設定</button></div>'}
  const pend=pendings();
@@ -239,7 +255,7 @@ function viewToday(){
 
 function viewPools(){
  const vb=varBudget(),tot=S.pools.reduce((s,p)=>s+p.alloc,0),un=vb-tot;
- let h='<div class="top"><span class="d">預算池</span><span class="t">水位</span><button class="gear" data-act="settings">設定</button></div>';
+ let h='<div class="top"><span class="d">預算池</span><span class="t">'+moonSvg()+'水位</span><button class="gear" data-act="settings">設定</button></div>';
  h+='<div class="lab"><span>可變預算（零用錢'+(S.settings.fixedInside?'扣固定支出':'')+'）</span></div><div class="big num">'+money(vb)+'</div>';
  h+='<div class="sub"><span>已分配 <b class="num">'+money(tot)+'</b></span><span class="'+(un<0?'neg':'')+'">'+(un>=0?'未分配 ':'超配 ')+'<b class="num">'+money(Math.abs(un))+'</b></span></div>';
  h+='<div class="sec"><div class="lab"><span>池子（每月額度）</span></div><div class="pf" style="border-bottom:1px solid var(--ink)"><span class="pm">名稱</span><span class="pm">每月額度</span><span class="pm">結算</span><span></span></div>';
@@ -260,7 +276,7 @@ function viewPools(){
 function monthsTo(rem,per){return per>0?Math.ceil(rem/per):null}
 function viewSave(){
  const t=todayStr(),g=S.settings,tot=savedTotal(),rem=Math.max(0,g.goalAmount-tot),sv=monthSaved(t),f=g.saveFloor,ide=g.saveIdeal;
- let h='<div class="top"><span class="d">存款</span><span class="t">水位</span><button class="gear" data-act="settings">設定</button></div>';
+ let h='<div class="top"><span class="d">存款</span><span class="t">'+moonSvg()+'水位</span><button class="gear" data-act="settings">設定</button></div>';
  h+='<div class="lab"><span>'+esc(g.goalName)+'</span><span>目標 '+money(g.goalAmount)+'</span></div><div class="big num">'+money(tot)+'</div>';
  h+='<div class="goal"><i style="width:'+Math.min(100,g.goalAmount?tot/g.goalAmount*100:0)+'%"></i></div><div class="pm">完成 '+Math.round(g.goalAmount?tot/g.goalAmount*100:0)+'% · 還差 '+money(rem)+'</div>';
  const sd=parse(S.startDate),days=Math.max(1,Math.round((parse(t)-sd)/864e5)+1),net=S.deposits.reduce((s,d)=>s+d.amount,0),avg=days>=14?net/days*30.4:0;
@@ -284,7 +300,7 @@ function viewSave(){
 
 const CH={save:'存下來',buffer:'進緩衝池',spread:'平攤',pool:'轉到其他池',savings:'動用存款',ignore:'不處理',none:'剛好'};
 function viewStats(){
- const t=todayStr();let h='<div class="top"><span class="d">分析</span><span class="t">水位</span><button class="gear" data-act="settings">設定</button></div>';
+ const t=todayStr();let h='<div class="top"><span class="d">分析</span><span class="t">'+moonSvg()+'水位</span><button class="gear" data-act="settings">設定</button></div>';
  const A=monthAgg(t),el=Math.max(1,Math.round((parse(t)-parse(A.first))/864e5)+1);
  h+='<div class="lab"><span>月底預測（照目前節奏）</span></div>';
  if(el<3)h+='<div class="empty">記滿 3 天後開始預測。</div>';
